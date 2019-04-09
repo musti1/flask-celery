@@ -1,36 +1,32 @@
-from celery import Celery
-from workerATasks import WorkerATasks
+from workerA import long_task
+from workerB import counter_task
 from flask import (
     Flask,
     jsonify,
-    request
+    request,
+    render_template
 )
 
 app = Flask(__name__)
 app.debug = True
 app.clients = {}
-app.config['SECRET_KEY'] = 'top-secret!'
-
-# Celery configuration
-app.config['CELERY_BROKER_URL'] = 'amqp://rabbitmq:rabbitmq@localhost:5672/'
-app.config['CELERY_RESULT_BACKEND'] = 'rpc://'
-
-# Initialize Celery
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['CELERY_RESULT_BACKEND'])
-celery.conf.update(app.config)
 
 
-@celery.task(bind=True)
-def long_task(self, name):
-    task_id = self.request.id
-    tasks = WorkerATasks()
-    return tasks.execute(name, task_id)
+@app.route("/")
+def home():
+    return render_template('pages/controlPanel.html')
 
 
 @app.route('/longtask', methods=['GET'])
-def longtask():
+def execute_long_task():
     name = request.args.get('name')
     task = long_task.delay(name)
+    return jsonify({}), 202
+
+
+@app.route('/counter', methods=['GET'])
+def execute_counter_task():
+    task = counter_task.delay()
     return jsonify({}), 202
 
 
