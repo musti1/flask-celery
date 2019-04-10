@@ -12,6 +12,14 @@ class FlowerApi:
     @staticmethod
     def list_tasks():
         response = requests.get('http://localhost:5555/api/tasks')
+        print(response.text);
+        if response.status_code == 200:
+            return response.text
+        return False
+
+    @staticmethod
+    def task_info(task_id):
+        response = requests.get('http://localhost:5555/api/task/info/' + task_id)
         if response.status_code == 200:
             return response.json()
         return False

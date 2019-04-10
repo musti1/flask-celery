@@ -16,3 +16,6 @@ def long_task(name):
     return WorkerATasks.long_task(name, task_id)
 
 
+@celery.task()
+def fail_task():
+    return WorkerATasks.fail_task()

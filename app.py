@@ -1,10 +1,11 @@
-from workerA import long_task
+from workerA import long_task, fail_task
 from workerB import counter_task, addition_task
 from flowerApi import FlowerApi
 from EsHelper import EsHelper
 from flask import (
     Flask,
     request,
+    jsonify,
     render_template,
     redirect, url_for
 )
@@ -33,14 +34,23 @@ def show_logs():
 @app.route('/execute_task', methods=['GET'])
 def execute_long_task():
     task_name = request.args.get('task_name')
-    if task_name == 'longtask':
+    if task_name == 'long':
         name = request.args.get('name')
         long_task.delay(name)
     elif task_name == 'counter':
         counter_task.delay()
     elif task_name == 'addition':
         addition_task.delay()
+    elif task_name == 'fail':
+        fail_task.delay()
+
     return redirect(url_for('home'))
+
+
+@app.route('/tasks', methods=['GET'])
+def get_tasks():
+    FlowerApi.list_tasks()
+    return jsonify({}), 200
 
 
 @app.route('/terminate', methods=['GET'])
