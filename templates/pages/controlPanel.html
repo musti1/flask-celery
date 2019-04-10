@@ -1,4 +1,164 @@
 {% extends "layout.html" %}
 {% block content %}
+    <div class="row" style="margin-top: 50px;">
+        <div class="col-md-12 text-center">
+            <div class="outer-form">
+                <table class="table table-striped table-dark">
+                    <thead>
+                    <tr>
+                        <th class="head">Tasks</th>
 
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td style="padding: 14px;">Long Task</td>
+                        <td style="padding: 14px;"><span id="longTaskStatus">stop</span></td>
+                        <td>
+                            <label>
+                                <input type="text" name="longTaskValue" required>
+                            </label>
+                        </td>
+                        <td>
+                            <button id="longTaskOn">on</button>
+                        </td>
+                        <td>
+                            <button id="longTaskOff">off</button>
+                        </td>
+                        <td>
+                            <a href="#">task logs</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px;">Counter Task</td>
+                        <td style="padding: 14px;"><span id="counterTaskStatus">stop</span></td>
+                        <td></td>
+                        <td>
+                            <button id="counterTaskOn">on</button>
+                        </td>
+                        <td>
+                            <button id="counterTaskOff">off</button>
+                        </td>
+                        <td>
+                            <a href="#">task logs</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 14px;">Addition Task</td>
+                        <td style="padding: 14px;"><span id="additionTaskStatus">stop</span></td>
+                        <td></td>
+                        <td>
+                            <button id="additionTaskOn">on</button>
+                        </td>
+                        <td>
+                            <button id="additionTaskOff">off</button>
+                        </td>
+                        <td>
+                            <a href="#">task logs</a>
+                        </td>
+                    </tr>
+                    </tbody>
+
+                </table>
+            </div>
+            <button id="youButton" type="reset" class="btn btn-default btn-lg">Reset</button>
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type=text/javascript>
+        $(function () {
+            $("#youButton").click(function () {
+                input = $('<table class="table table-striped table-dark">\n' +
+                    '                    <thead>\n' +
+                    '                    <tr>\n' +
+                    '                        <th class="head">Tasks</th>\n' +
+                    '\n' +
+                    '                    </tr>\n' +
+                    '                    </thead>\n' +
+                    '                    <tbody>\n' +
+                    '                    <tr>\n' +
+                    '                        <td style="padding: 14px;">Long Task</td>\n' +
+                    '                        <td style="padding: 14px;"><span id="longTaskStatus">stop</span></td>\n' +
+                    '                        <td>\n' +
+                    '                            <label>\n' +
+                    '                                <input type="text" name="longTaskValue" required>\n' +
+                    '                            </label>\n' +
+                    '                        </td>\n' +
+                    '                        <td>\n' +
+                    '                            <button id="longTaskOn">on</button>\n' +
+                    '                        </td>\n' +
+                    '                        <td>\n' +
+                    '                            <button id="longTaskOff">off</button>\n' +
+                    '                        </td>\n' +
+                    '                        <td>\n' +
+                    '                            <a href="#">task logs</a>\n' +
+                    '                        </td>\n' +
+                    '                    </tr>\n' +
+                    '                    <tr>\n' +
+                    '                        <td style="padding: 14px;">Counter Task</td>\n' +
+                    '                        <td style="padding: 14px;"><span id="counterTaskStatus">stop</span></td>\n' +
+                    '                        <td></td>\n' +
+                    '                        <td>\n' +
+                    '                            <button id="counterTaskOn">on</button>\n' +
+                    '                        </td>\n' +
+                    '                        <td>\n' +
+                    '                            <button id="counterTaskOff">off</button>\n' +
+                    '                        </td>\n' +
+                    '                        <td>\n' +
+                    '                            <a href="#">task logs</a>\n' +
+                    '                        </td>\n' +
+                    '                    </tr>\n' +
+                    '                    <tr>\n' +
+                    '                        <td style="padding: 14px;">Addition Task</td>\n' +
+                    '                        <td style="padding: 14px;"><span id="additionTaskStatus">stop</span></td>\n' +
+                    '                        <td></td>\n' +
+                    '                        <td>\n' +
+                    '                            <button id="additionTaskOn">on</button>\n' +
+                    '                        </td>\n' +
+                    '                        <td>\n' +
+                    '                            <button id="additionTaskOff">off</button>\n' +
+                    '                        </td>\n' +
+                    '                        <td>\n' +
+                    '                            <a href="#">task logs</a>\n' +
+                    '                        </td>\n' +
+                    '                    </tr>\n' +
+                    '                    </tbody>\n' +
+                    '\n' +
+                    '                </table>');
+                $('.outer-form').append(input);
+            });
+            $("#longTaskOn").click(function () {
+
+                var value = $("input:text").val();
+                if (value !== '') {
+                    request = $.ajax({
+                        url: '/request?name='+value,
+                        type: 'GET',
+                        success: function(response) {
+                            console.log(response);
+                        },
+                        error: function(error) {
+                            console.log(error);
+                        }
+                    });
+                    $('#longTaskStatus').html('running')
+                }
+            });
+            $("#longTaskOff").click(function () {
+                console.log('longTaskOff ajax request')
+            });
+            $("#counterTaskOn").click(function () {
+                console.log('counterTaskOn ajax request')
+            });
+            $("#counterTaskOff").click(function () {
+                console.log('counterTaskOff ajax request')
+            });
+            $("#additionTaskOn").click(function () {
+                console.log('additionTaskOn ajax request')
+            });
+            $("#additionTaskOff").click(function () {
+                console.log('additionTaskOff ajax request')
+            });
+        });
+    </script>
 {% endblock %}
