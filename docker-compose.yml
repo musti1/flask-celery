@@ -6,57 +6,59 @@ services:
       dockerfile: Dockerfile
     restart: always
     ports:
-     - "5000:5000"
+      - "5000:5000"
     depends_on:
       - rabbit
     volumes:
       - .:/app
   rabbit:
-        hostname: rabbit
-        image: rabbitmq:latest
-        environment:
-            - RABBITMQ_DEFAULT_USER=rabbitmq
-            - RABBITMQ_DEFAULT_PASS=rabbitmq
-        ports:
-            - "5673:5672"
+    hostname: rabbit
+    image: rabbitmq:latest
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbitmq
+      - RABBITMQ_DEFAULT_PASS=rabbitmq
+    ports:
+      - "5673:5672"
   elasticsearch:
-        image: docker.elastic.co/elasticsearch/elasticsearch:6.4.0
-        container_name: elasticsearch
-        ports:
-            - "9200:9200"
-            - "9300:9300"
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.4.0
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+      - "9300:9300"
   logstash:
-      image: docker.elastic.co/logstash/logstash:6.4.0
-      container_name: logstash
-      depends_on: ['elasticsearch']
-  worker_1:  
-          build:
-            context: . 
-          hostname: worker_1 
-          entrypoint : celery
-          command: -A workerA worker --loglevel=info -Q workerA
-          volumes:
-            - .:/app
-          links:
-              - rabbit
-          depends_on:
-              - rabbit
-  worker_2:  
-          build:
-            context: .
-          hostname: worker_2  
-          entrypoint : celery
-          command: -A workerB worker --loglevel=info -Q workerB
-          volumes:
-            - .:/app
-          links:
-              - rabbit
-          depends_on:
-              - rabbit
-  flower:  
-        image: mher/flower
-        environment:
-            - CELERY_BROKER_URL=amqp://rabbitmq:rabbitmq@rabbit:5672/
-            - FLOWER_PORT=5555
-        ports:  
-            - 5555:5555
+    image: docker.elastic.co/logstash/logstash:6.4.0
+    container_name: logstash
+    volumes:
+      - ./logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+    depends_on: ['elasticsearch']
+  worker_1:
+    build:
+      context: .
+    hostname: worker_1
+    entrypoint: celery
+    command: -A workerA worker --loglevel=info -Q workerA
+    volumes:
+      - .:/app
+    links:
+      - rabbit
+    depends_on:
+      - rabbit
+  worker_2:
+    build:
+      context: .
+    hostname: worker_2
+    entrypoint: celery
+    command: -A workerB worker --loglevel=info -Q workerB
+    volumes:
+      - .:/app
+    links:
+      - rabbit
+    depends_on:
+      - rabbit
+  flower:
+    image: mher/flower
+    environment:
+      - CELERY_BROKER_URL=amqp://rabbitmq:rabbitmq@rabbit:5672/
+      - FLOWER_PORT=5555
+    ports:
+      - 5555:5555

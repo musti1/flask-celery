@@ -10,12 +10,12 @@ class EsHelper:
             port=9200,
         )
 
-        self.index = 'workers'
-        self.type = 'tasks'
+        self.index = 'logstash-*'
+        self.type = 'doc'
 
     def fetch(self, task_id):
         search = Search(using=self.elasticsearch, index=self.index, doc_type=self.type).query(
-            Q("query_string", query="task_id:{}".format(task_id)))
+            Q("query_string", query="@fields.celery.correlation_id:{}".format(task_id)))
         count = search.count()
         res = search[0:count].execute()
 

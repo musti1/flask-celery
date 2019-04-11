@@ -1,9 +1,12 @@
 from celery import Celery
 from workerATasks import WorkerATasks
-from celery.utils.log import get_task_logger
 
+import celstash
+import logging
 
-logger = get_task_logger(__name__)
+celstash.configure(logstash_host='logstash', logstash_port=9999)
+logger = celstash.new_logger('flask-celery')
+logger.setLevel(logging.INFO)
 # Celery configuration
 CELERY_BROKER_URL = 'amqp://rabbitmq:rabbitmq@rabbit:5672/'
 CELERY_RESULT_BACKEND = 'rpc://'
@@ -15,8 +18,7 @@ celery = Celery('workerA', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKE
 @celery.task(acks_late=True)
 def long_task(name):
     task_id = long_task.request.id
-    logger.info(f'Input: {name}')
-    return WorkerATasks.long_task(name, task_id)
+    return WorkerATasks.long_task(logger,name, task_id)
 
 
 @celery.task()

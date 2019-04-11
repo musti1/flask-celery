@@ -4,3 +4,4 @@ celery
 requests
 elasticsearch
 elasticsearch_dsl
+celstash

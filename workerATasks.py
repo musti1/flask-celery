@@ -1,24 +1,19 @@
 from subprocess import Popen, PIPE
-from EsHelper import upload
-
+import time
 
 class WorkerATasks:
     @staticmethod
-    def long_task(name, job_id):
+    def long_task(logger,name, job_id):
         process = Popen(['sh jobs/job.sh' + name],shell= True, executable='/bin/bash',stdout=PIPE, bufsize=0, stderr=PIPE)
         while True:
-            line = process.stdout.readline()
-            if line !='':
-                string = 'Job ID: ' + job_id + ' value: ' + name
-                upload_obj = {
-                            "task_id":job_id,
-                            "name":name,
-                            "age": 27,
-                            "about": "Love to play cricket",
-                            "interests": ['sports','music'],
-                            }
-                upload(upload_obj)
-            sleep(1)
+            output = process.stdout.readline()
+            #if output == '' and process.poll() is not None:
+           #     break
+           # if output:
+              #  log = output.strip()
+            logger.info(f'{name}')
+            time.sleep(3)
+
 
     @staticmethod
     def fail_task():
