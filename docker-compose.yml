@@ -19,12 +19,22 @@ services:
             - RABBITMQ_DEFAULT_PASS=rabbitmq
         ports:
             - "5673:5672"
+  elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:6.4.0
+        container_name: elasticsearch
+        ports:
+            - "9200:9200"
+            - "9300:9300"
+  logstash:
+      image: docker.elastic.co/logstash/logstash:6.4.0
+      container_name: logstash
+      depends_on: ['elasticsearch']
   worker_1:  
           build:
             context: . 
           hostname: worker_1 
           entrypoint : celery
-          command: -A workerA worker --loglevel=info 
+          command: -A workerA worker --loglevel=info -Q workerA
           volumes:
             - .:/app
           links:
@@ -36,7 +46,7 @@ services:
             context: .
           hostname: worker_2  
           entrypoint : celery
-          command: -A workerB worker --loglevel=info  
+          command: -A workerB worker --loglevel=info -Q workerB
           volumes:
             - .:/app
           links:

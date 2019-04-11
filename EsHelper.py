@@ -10,8 +10,8 @@ class EsHelper:
             port=9200,
         )
 
-        self.index = ''
-        self.type = ''
+        self.index = 'workers'
+        self.type = 'tasks'
 
     def fetch(self, task_id):
         search = Search(using=self.elasticsearch, index=self.index, doc_type=self.type).query(

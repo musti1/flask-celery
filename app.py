@@ -36,13 +36,13 @@ def execute_long_task():
     task_name = request.args.get('task_name')
     if task_name == 'long':
         name = request.args.get('name')
-        long_task.delay(name)
+        long_task.apply_async(args=[name],queue='workerA')
     elif task_name == 'counter':
-        counter_task.delay()
+        counter_task.apply_async(queue='workerB')
     elif task_name == 'addition':
-        addition_task.delay()
+        addition_task.apply_async(queue='workerB')
     elif task_name == 'fail':
-        fail_task.delay()
+        fail_task.apply_async(queue='workerA')
 
     return jsonify({}), 200
 
