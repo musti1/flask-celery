@@ -1,0 +1,52 @@
+version: "3"
+services:
+  web:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+     - "5000:5000"
+    depends_on:
+      - rabbit
+    volumes:
+      - .:/app
+  rabbit:
+        hostname: rabbit
+        image: rabbitmq:latest
+        environment:
+            - RABBITMQ_DEFAULT_USER=rabbitmq
+            - RABBITMQ_DEFAULT_PASS=rabbitmq
+        ports:
+            - "5673:5672"
+  worker_1:  
+          build:
+            context: . 
+          hostname: worker_1 
+          entrypoint : celery
+          command: -A workerA worker --loglevel=info 
+          volumes:
+            - .:/app
+          links:
+              - rabbit
+          depends_on:
+              - rabbit
+  worker_2:  
+          build:
+            context: .
+          hostname: worker_2  
+          entrypoint : celery
+          command: -A workerB worker --loglevel=info  
+          volumes:
+            - .:/app
+          links:
+              - rabbit
+          depends_on:
+              - rabbit
+  flower:  
+        image: mher/flower
+        environment:
+            - CELERY_BROKER_URL=amqp://rabbitmq:rabbitmq@rabbit:5672/
+            - FLOWER_PORT=5555
+        ports:  
+            - 5555:5555

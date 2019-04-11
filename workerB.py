@@ -2,7 +2,7 @@ from celery import Celery
 from workerBTask import WorkerBTasks
 
 # Celery configuration
-CELERY_BROKER_URL = 'amqp://rabbitmq:rabbitmq@localhost:5672/'
+CELERY_BROKER_URL = 'amqp://rabbitmq:rabbitmq@rabbit:5672/'
 CELERY_RESULT_BACKEND = 'rpc://'
 # Initialize Celery
 celery = Celery('workerB', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)

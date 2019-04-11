@@ -44,7 +44,7 @@ def execute_long_task():
     elif task_name == 'fail':
         fail_task.delay()
 
-    return redirect(url_for('home'))
+    return jsonify({}), 200
 
 
 @app.route('/tasks', methods=['GET'])
@@ -57,8 +57,8 @@ def get_tasks():
 def terminate():
     task_id = request.args.get('task_id')
     FlowerApi.terminate(task_id)
-    return redirect(url_for('home'))
+    return jsonify({}), 200
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,port=5000,host='0.0.0.0')

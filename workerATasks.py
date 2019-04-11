@@ -4,7 +4,7 @@ from subprocess import Popen, PIPE
 class WorkerATasks:
     @staticmethod
     def long_task(name, job_id):
-        process = Popen(['sh jobs/job.sh ' + name], shell=True, stdout=PIPE, bufsize=0, stderr=PIPE)
+        process = Popen(['sh jobs/job.sh' + name], shell=True, stdout=PIPE, bufsize=0, stderr=PIPE)
         while True:
             line = process.stdout.readline()
             if not line:

@@ -80,17 +80,14 @@
                 url: url,
                 type: 'GET',
                 success: function(data){
-                    return data
+                    populateTable(data);
                 },
                 error: function (error){
                     return error
                 }
             });
         }
-        var tasks = getTasksList('/tasks');
-        tasks.then(function (data) {
-            populateTable(data)
-        });
+        
         function populateTable(data){
             input = '<tbody>';
             $.each(data, function (key, value) {
@@ -107,6 +104,7 @@
 
         }
         $(function () {
+            getTasksList('/tasks');
 
             $("#selectTask").change(function(){
                 var selectedTask = $(this).children("option:selected").val();
