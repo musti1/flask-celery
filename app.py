@@ -28,7 +28,17 @@ def show_logs():
     logs = []
     for hit in result['hits']['hits']:
         logs.append(hit['_source'].to_dict())
-    return render_template('pages/logs.html', logs=logs)
+    return jsonify(logs)
+
+@app.route("/updated_logs")
+def get_updated_logs():
+    task_id = request.args.get('task_id')
+    date_from = request.args.get('date_from')
+    result = esHelper.fetchupdatedlogs(task_id,date_from)
+    logs = []
+    for hit in result['hits']['hits']:
+        logs.append(hit['_source'].to_dict())
+    return jsonify(logs)
 
 
 @app.route('/execute_task', methods=['GET'])
