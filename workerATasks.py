@@ -6,6 +6,7 @@ import time
 class WorkerATasks:
     @staticmethod
     def long_task(logger,name, job_id):
+        logger.info(f'Executing long task')
         cmd = "sh jobs/longTaskjob.sh {}".format(name)
         process = Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE, stderr=STDOUT, bufsize=0)
         while True:
@@ -18,10 +19,8 @@ class WorkerATasks:
     @staticmethod
     def fail_task(logger):
         cmd = "sh jobs/failTaskjob.sh"
+        logger.info(f'Executing fail task')
         process = Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE, stderr=STDOUT, bufsize=0)
         line = process.stdout.readline()
         logger.info(f'{line.decode()}')
-      #  time.sleep(20)
-       # logger.info(f'FailTask for WorkerA executed')
-      #  return ''
 
