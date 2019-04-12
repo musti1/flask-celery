@@ -93,9 +93,14 @@
 
         containerId: "loggerContainer",
         tableId: "logger",
+        lastLogTime: null,
         attachedTask: null,
         pollIntervalId: null,
 
+
+        initialize(){
+            this.getAllHistory();
+        },
         pollNewItems() {
             this.pollIntervalId = setInterval(this.getRecentHistory, 3000);
         },
@@ -105,18 +110,23 @@
         },
 
         isAttached() {
-            return (this.attachedTask !== null);
+            return (this.currentlyAttached() !== null);
+        },
+
+        currentlyAttached(){
+            return localStorage.getItem("attachedTask");
         },
 
         attach(taskId) {
-            this.attachedTask = taskId;
+            localStorage.setItem("attachedTask", taskId);
             this.resetLogs();
             this.getAllHistory();
             $.notify("Task Attached to logger" , "success");
         },
 
         detach() {
-            this.attachedTask = null;
+            localStorage.removeItem("attachedTask");
+            this.lastLogTime = null;
             this.resetLogs();
             this.clearPolling();
             $.notify("Task Detached from logger" , "success");
@@ -142,6 +152,12 @@
             );
         },
 
+        setLastLogTime(logsData){
+            if(logsData.length !== 0){
+                this.lastLogTime = logsData[logsData.length -1]["@timestamp"];
+            }
+        },
+
         renderLogs(logsData) {
             let logs = '';
             $.each(logsData, function (key, logItem) {
@@ -152,7 +168,7 @@
                     <td>${logItem["@message"]}</td>
                 </tr>`;
             });
-
+            this.setLastLogTime(logsData);
             $(`#${this.tableId} tbody`).append(logs);
             $(`#${this.containerId}`).animate({
                 scrollTop: $(`#${this.tableId}`).height()
@@ -164,7 +180,7 @@
             if (this.isAttached()) {
                 this.addLoadingText();
                 $.ajax({
-                    url: `/logs?task_id=${this.attachedTask}`,
+                    url: `/logs?task_id=${this.currentlyAttached()}`,
                     type: 'GET',
                     dataType: "json",
                     success: function (data) {
@@ -181,7 +197,22 @@
         },
 
         getRecentHistory() {
-            console.log("polling for new history");
+            // poll only when last log time is set otherwise ignore
+            if(this.lastLogTime !== null ){
+                console.log("polling for new history");
+                $.ajax({
+                    url: `/updated_logs?task_id=${logger.currentlyAttached()}&date_from=${logger.lastLogTime}`,
+                    type: 'GET',
+                    dataType: "json",
+                    success: function (data) {
+                        logger.renderLogs(data);
+                    },
+                    error: function (error) {
+                        return error
+                    }
+                });
+            }
+
         }
     };
 
@@ -315,8 +346,10 @@
 
 
     $(function () {
+
         Worker.initialize();
         Task.initialize();
+        logger.initialize();
 
         $("#selectTask").change(function () {
             const selectedTask = $(this).children("option:selected").val();
