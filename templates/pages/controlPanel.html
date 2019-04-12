@@ -23,7 +23,7 @@
 <div class="row" style="margin-top: 50px;">
     <div class="col-md-6 text-center">
         <div>
-            <h2>Active Tasks</h2>
+            <h2>Task List</h2>
             <table id="activeTaskTable" class="table table-striped table-dark">
                 <thead>
                 <tr>
@@ -112,12 +112,14 @@
             this.attachedTask = taskId;
             this.resetLogs();
             this.getAllHistory();
+            $.notify("Task Attached to logger" , "success");
         },
 
         detach() {
             this.attachedTask = null;
             this.resetLogs();
             this.clearPolling();
+            $.notify("Task Detached from logger" , "success");
         },
 
         addLoadingText(){
@@ -189,6 +191,41 @@
             this.getTasksList();
             setInterval(this.getTasksList, 5000);
         },
+
+        terminate(taskId){
+            return $.ajax({
+                url: "/terminate?task_id="+ taskId,
+                type: 'GET',
+                dataType: "json",
+                success: function (data) {
+                    $.notify("Task Scheduled for Termination" , "success");
+                },
+                error: function (error) {
+                    return error
+                }
+            });
+        },
+
+        start(taskName, params = {}){
+
+            const requestParams = {
+                task_name: taskName,
+            };
+
+            console.log(requestParams);
+            return $.ajax({
+                url: "/execute_task",
+                type: 'GET',
+                data: requestParams,
+                dataType: "json",
+                success: function (data) {
+                    $.notify("Task Scheduled for Initiation", "success");
+                },
+                error: function (error) {
+                    return error
+                }
+            });
+        },
         getTasksList() {
             return $.ajax({
                 url: "/tasks",
@@ -216,12 +253,13 @@
             if (Object.keys(taskList).length !== 0) {
                 $.each(taskList, function (key, value) {
                     console.log(value);
+                    const killButton = (value.state === "STARTED") ? `<button class="stopTask" value="${value.uuid}">Kill</button>` : '';
                     const taskItemTemp = `<tr>
                         <td>${value.name}</td>
                         <td><span class="counterTaskStatus">${value.state}</span></td>
                         <td><button class="attach" value="${value.uuid}">Attach</button><button class="detach" value=${value.uuid}">Detach</button></td>
                         <td>
-                            <button class="stopTask" value="${value.uuid}">Kill</button>
+                            ${killButton}
                         </td>
                     </tr>`;
                     input = input + taskItemTemp;
@@ -297,16 +335,12 @@
         });
 
         $("#startTask").click(function () {
-            let value = '';
-            const selectedTask = $(this).children("option:selected").val();
+            let extraParam = '';
+            const selectedTask = $("#selectTask").val();
             if (selectedTask === 'long') {
-                value = $("#name").val();
+                extraParam = $("#name").val();
             }
-            let url = '/request?task_name=' + selectedTask;
-            if (value !== '') {
-                url = url + '&name=' + value
-            }
-            getTasksList(url);
+            Task.start(selectedTask);
 
         });
         $(document).on("click", ".attach", function () {
@@ -323,7 +357,7 @@
 
         $(document).on("click", ".stopTask", function () {
             const taskId = $(this).val();
-            console.log(taskId);
+            Task.terminate(taskId);
             //ajax request
         })
 
