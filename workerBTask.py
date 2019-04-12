@@ -5,6 +5,7 @@ from time import sleep
 class WorkerBTasks:
     @staticmethod
     def counter_task(logger):
+        logger.info(f'Executing counter task')
         counter = 1
         while True:
             value = counter_value(counter)
@@ -14,6 +15,7 @@ class WorkerBTasks:
 
     @staticmethod
     def sum_task(logger):
+        logger.info(f'Executing addition task')
         value = sum_of_rand_nums()
         sleep(20)
         logger.info(f'Sum of random number is {value}')
