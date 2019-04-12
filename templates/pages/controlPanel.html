@@ -2,7 +2,7 @@
 {% block content %}
 <div class="row" style="margin-top: 50px;">
     <div class="col-md-4 text-center">
-        <div class="form-group select">
+        <div class="form-group taskDef">
             <label for="selectTask">Tasks List :</label>
             <select class="form-control" id="selectTask">
                 <option selected disabled value="">Select Task</option>
@@ -120,10 +120,14 @@
         },
 
         attach(taskId) {
+            if(this.isAttached()){
+                this.detach();
+            }
             localStorage.setItem("attachedTask", taskId);
             this.resetLogs();
             this.getAllHistory();
             $.notify("Task Attached to logger" , "success");
+
         },
 
         detach() {
@@ -255,7 +259,7 @@
             return $.ajax({
                 url: "/execute_task",
                 type: 'GET',
-                data: requestParams,
+                data: Object.assign(requestParams, params),
                 dataType: "json",
                 success: function (data) {
                     $.notify("Task Scheduled for Initiation", "success");
@@ -360,28 +364,31 @@
         logger.initialize();
 
         $("#selectTask").change(function () {
-            const selectedTask = $(this).children("option:selected").val();
+            const selectedTask = $("#selectTask").val();
             const nameFieldSelector = '.nameField';
             if ($(nameFieldSelector).length) {
                 $(nameFieldSelector).remove();
             }
-            if (selectedTask === 'longTask') {
-                const input = $('<div class="form-group nameField">\n' +
-                    '  <label for="name">Name:</label>\n' +
-                    '  <input type="text" class="form-control" id="name">\n' +
-                    '</div>');
+            if (selectedTask === 'long') {
+                const input = $(`<div class="form-group nameField">
+                      <label for="name">Name:</label>
+                      <input type="text" class="form-control" id="name">
+                    </div>`);
 
-                $(".select").append(input)
+                $(".taskDef").append(input)
             }
         });
 
         $("#startTask").click(function () {
-            let extraParam = '';
+
             const selectedTask = $("#selectTask").val();
             if (selectedTask === 'long') {
-                extraParam = $("#name").val();
+                const nameParam = $("#name").val();
+                Task.start(selectedTask, {name: nameParam});
+            }else {
+                Task.start(selectedTask);
             }
-            Task.start(selectedTask);
+
 
         });
         $(document).on("click", ".attach", function () {
