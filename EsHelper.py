@@ -15,7 +15,7 @@ class EsHelper:
 
     def fetch(self, task_id):
         search = Search(using=self.elasticsearch, index=self.index, doc_type=self.type).query(
-            Q("query_string", query="@fields.celery.correlation_id:{}".format(task_id))).sort({"@timestamp":{"order":"desc"}})
+            Q("query_string", query="@fields.celery.correlation_id:{}".format(task_id))).extra(size = 10000).sort({"@timestamp":{"order":"desc"}})
         count = search.count()
         res = search[0:count].execute()
 
@@ -23,7 +23,7 @@ class EsHelper:
 
     def fetchUpdatedLogs(self, task_id,date_from):
         search = Search(using=self.elasticsearch, index=self.index, doc_type=self.type).query(
-            Q("query_string", query="@fields.celery.correlation_id:{a} AND @timestamp:[\"{b}\" TO now]".format(a=task_id,b=date_from))).sort({"@timestamp":{"order":"desc"}})
+            Q("query_string", query="@fields.celery.correlation_id:{a} AND @timestamp:[\"{b}\" TO now]".format(a=task_id,b=date_from))).extra(size = 10000).sort({"@timestamp":{"order":"desc"}})
         count = search.count()
         res = search[0:count].execute()
 

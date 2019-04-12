@@ -1,9 +1,9 @@
 from celery import Celery
 from workerATasks import WorkerATasks
-
 import celstash
 import logging
 
+#Celstash Initialization
 celstash.configure(logstash_host='logstash', logstash_port=9999)
 logger = celstash.new_logger('flask-celery')
 logger.setLevel(logging.INFO)
@@ -18,9 +18,9 @@ celery = Celery('workerA', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKE
 @celery.task(acks_late=True)
 def long_task(name):
     task_id = long_task.request.id
-    return WorkerATasks.long_task(logger,name, task_id)
+    return WorkerATasks.long_task(logger, name, task_id)
 
 
 @celery.task()
 def fail_task():
-    return WorkerATasks.fail_task()
+    return WorkerATasks.fail_task(logger)

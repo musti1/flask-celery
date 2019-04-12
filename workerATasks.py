@@ -1,21 +1,27 @@
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE , STDOUT
+import sys
+import shlex
 import time
 
 class WorkerATasks:
     @staticmethod
     def long_task(logger,name, job_id):
-        process = Popen(['sh jobs/job.sh' + name],shell= True, executable='/bin/bash',stdout=PIPE, bufsize=0, stderr=PIPE)
+        cmd = "sh jobs/longTaskjob.sh {}".format(name)
+        process = Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE, stderr=STDOUT, bufsize=0)
         while True:
-            output = process.stdout.readline()
-            #if output == '' and process.poll() is not None:
-           #     break
-           # if output:
-              #  log = output.strip()
-            logger.info(f'{name}')
-            time.sleep(3)
+            line = process.stdout.readline()
+            if not line:
+                break
+            logger.info(f'{line.decode()}')
 
 
     @staticmethod
-    def fail_task():
-        return ''
+    def fail_task(logger):
+        cmd = "sh jobs/failTaskjob.sh"
+        process = Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE, stderr=STDOUT, bufsize=0)
+        line = process.stdout.readline()
+        logger.info(f'{line.decode()}')
+      #  time.sleep(20)
+       # logger.info(f'FailTask for WorkerA executed')
+      #  return ''
 
