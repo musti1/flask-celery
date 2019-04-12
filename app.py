@@ -1,3 +1,4 @@
+#!/usr/local/bin/python3
 from workerA import long_task, fail_task
 from workerB import counter_task, addition_task
 from flowerApi import FlowerApi
@@ -34,7 +35,7 @@ def show_logs():
 def get_updated_logs():
     task_id = request.args.get('task_id')
     date_from = request.args.get('date_from')
-    result = esHelper.fetchupdatedlogs(task_id,date_from)
+    result = esHelper.fetchUpdatedLogs(task_id,date_from)
     logs = []
     for hit in result['hits']['hits']:
         logs.append(hit['_source'].to_dict())
@@ -59,9 +60,13 @@ def execute_long_task():
 
 @app.route('/tasks', methods=['GET'])
 def get_tasks():
-    FlowerApi.list_tasks()
-    return jsonify({}), 200
+    task_list = FlowerApi.list_tasks()
+    return jsonify(task_list), 200
 
+@app.route('/workers', methods=['GET'])
+def get_workers():
+    worker_list = FlowerApi.list_workers()
+    return jsonify(worker_list), 200
 
 @app.route('/terminate', methods=['GET'])
 def terminate():

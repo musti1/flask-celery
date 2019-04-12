@@ -21,7 +21,7 @@ class EsHelper:
 
         return res
 
-    def fetchupdatedlogs(self, task_id,date_from):
+    def fetchUpdatedLogs(self, task_id,date_from):
         search = Search(using=self.elasticsearch, index=self.index, doc_type=self.type).query(
             Q("query_string", query="@fields.celery.correlation_id:{a} AND @timestamp:[\"{b}\" TO now]".format(a=task_id,b=date_from))).sort({"@timestamp":{"order":"desc"}})
         count = search.count()

@@ -1,155 +1,332 @@
 {% extends "layout.html" %}
 {% block content %}
-    <div class="row" style="margin-top: 50px;">
-        <div class="col-md-4 text-center">
-            <div class="form-group select">
-                <label for="selectTask">Tasks List :</label>
-                <select class="form-control" id="selectTask">
-                    <option selected disabled value="">Select Task</option>
-                    <option value="long">Long Task</option>
-                    <option value="fail">Fail Task</option>
-                    <option value="counter">Counter Task</option>
-                    <option value="addition">Addition Task</option>
-                </select>
-                <br>
-            </div>
-        </div>
-        <div class="col-md-8 text-right" style="margin-top: 30px;">
-            <div class="form-group button">
-                <button id="startTask" type="button" class="btn btn-secondary">Start</button>
-            </div>
+<div class="row" style="margin-top: 50px;">
+    <div class="col-md-4 text-center">
+        <div class="form-group select">
+            <label for="selectTask">Tasks List :</label>
+            <select class="form-control" id="selectTask">
+                <option selected disabled value="">Select Task</option>
+                <option value="long">Long Task</option>
+                <option value="fail">Fail Task</option>
+                <option value="counter">Counter Task</option>
+                <option value="addition">Addition Task</option>
+            </select>
+            <br>
         </div>
     </div>
-    <div class="row" style="margin-top: 50px;">
-        <div class="col-md-6 text-center">
-            <div class="outer-form">
-                <table id="table" class="table table-striped table-dark">
-                    <thead>
-                    <tr>
-                        <th class="head">Task Name</th>
-                        <th class="head">Status</th>
-                        <th class="head">Attach/Detach</th>
-                        <th class="head">Stop</th>
-
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td style="padding: 14px;">Long Task</td>
-                        <td style="padding: 14px;"><span id="longTaskStatus">stop</span></td>
-                        <td><button id="longTaskOff">attach</button><button id="longTaskOff">detach</button></td>
-                        <td>
-                            <button id="longTaskOff">off</button>
-                        </td>
-
-                    </tr>
-                    <tr>
-                        <td style="padding: 14px;">Counter Task</td>
-                        <td style="padding: 14px;"><span id="counterTaskStatus">stop</span></td>
-                        <td><button id="longTaskOff">attach</button><button id="longTaskOff">detach</button></td>
-                        <td>
-                            <button id="counterTaskOff">off</button>
-                        </td>
-
-                    </tr>
-                    <tr>
-                        <td style="padding: 14px;">Addition Task</td>
-                        <td style="padding: 14px;"><span id="additionTaskStatus">stop</span></td>
-                        <td><button id="longTaskOff">attach</button><button id="longTaskOff">detach</button></td>
-                        <td>
-                            <button id="additionTaskOff" value="123">off</button>
-                        </td>
-
-                    </tr>
-                    </tbody>
-
-                </table>
-            </div>
-        </div>
-        <div class="col-md-6 text-center">
-            <div class="outer-form">
-                <textarea id="logsArea" rows="20" cols="50" readonly>
-                </textarea>
-            </div>
+    <div class="col-md-8 text-right" style="margin-top: 30px;">
+        <div class="form-group button">
+            <button id="startTask" type="button" class="btn btn-secondary">Start</button>
         </div>
     </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script type=text/javascript>
-        function getTasksList(url){
+</div>
+<div class="row" style="margin-top: 50px;">
+    <div class="col-md-6 text-center">
+        <div>
+            <h2>Active Tasks</h2>
+            <table id="activeTaskTable" class="table table-striped table-dark">
+                <thead>
+                <tr>
+                    <th scope="col">Task Name</th>
+                    <th scope="col">State</th>
+                    <th scope="col">Attach/Detach</th>
+                    <th scope="col">Stop</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td colspan="4">No Active Task Found ...</td>
+                </tr>
+                </tbody>
+
+            </table>
+        </div>
+        <div>
+            <h2>Active Workers</h2>
+            <table id="activeWorkerTable" class="table table-striped table-dark">
+                <thead>
+                <tr>
+                    <th scope="col">Worker Name</th>
+                    <th scope="col">Active</th>
+                    <th scope="col">Total</th>
+                    <th scope="col">Last Checked</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td colspan="4">No Active Workers Found ...</td>
+                </tr>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6 text-center">
+        <h2>Logger</h2>
+        <div id="loggerContainer" class="table-wrapper-scroll-y my-custom-scrollbar">
+            <table id="logger" class="table table-striped table-dark">
+                <thead>
+                <tr>
+                    <th scope="col">Host Name</th>
+                    <th scope="col">TimeStamp</th>
+                    <th scope="col">Message</th>
+
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td colspan="3">Attach task to logger ...</td>
+                </tr>
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script type=text/javascript>
+
+    const logger = {
+
+        containerId: "loggerContainer",
+        tableId: "logger",
+        attachedTask: null,
+        pollIntervalId: null,
+
+        pollNewItems() {
+            this.pollIntervalId = setInterval(this.getRecentHistory, 3000);
+        },
+
+        clearPolling() {
+            clearInterval(this.pollIntervalId);
+        },
+
+        isAttached() {
+            return (this.attachedTask !== null);
+        },
+
+        attach(taskId) {
+            this.attachedTask = taskId;
+            this.resetLogs();
+            this.getAllHistory();
+        },
+
+        detach() {
+            this.attachedTask = null;
+            this.resetLogs();
+            this.clearPolling();
+        },
+
+        addLoadingText(){
+            $(`#${this.tableId} tbody`).html(
+                `<tr>
+                    <td colspan="3">Loading Logs ....</td>
+                </tr>`
+            );
+        },
+
+        clear() {
+            $(`#${this.tableId} tbody`).html("");
+        },
+
+        resetLogs() {
+            $(`#${this.tableId} tbody`).html(
+                `<tr>
+                    <td colspan="3">Attach task to logger ...</td>
+                </tr>`
+            );
+        },
+
+        renderLogs(logsData) {
+            let logs = '';
+            $.each(logsData, function (key, logItem) {
+                console.log(logItem);
+                logs += `<tr>
+                    <td>${logItem["@fields"]["celery"]["hostname"]}</td>
+                    <td>${logItem["@timestamp"]}</td>
+                    <td>${logItem["@message"]}</td>
+                </tr>`;
+            });
+
+            $(`#${this.tableId} tbody`).append(logs);
+            $(`#${this.containerId}`).animate({
+                scrollTop: $(`#${this.tableId}`).height()
+            }, 1000);
+
+        },
+
+        getAllHistory() {
+            if (this.isAttached()) {
+                this.addLoadingText();
+                $.ajax({
+                    url: `/logs?task_id=${this.attachedTask}`,
+                    type: 'GET',
+                    dataType: "json",
+                    success: function (data) {
+                        logger.clear();
+                        logger.renderLogs(data);
+                        logger.pollNewItems();
+                    },
+                    error: function (error) {
+                        return error
+                    }
+                });
+            }
+
+        },
+
+        getRecentHistory() {
+            console.log("polling for new history");
+        }
+    };
+
+    const Task = {
+
+        initialize(){
+            this.getTasksList();
+            setInterval(this.getTasksList, 5000);
+        },
+        getTasksList() {
             return $.ajax({
-                url: url,
+                url: "/tasks",
                 type: 'GET',
-                success: function(data){
-                    populateTable(data);
+                dataType: "json",
+                success: function (data) {
+                    Task.populateTaskTable(JSON.parse(data));
                 },
-                error: function (error){
+                error: function (error) {
                     return error
                 }
             });
+        },
+
+        resetTaskList(){
+            $('#activeTaskTable tbody').html(
+                `<tr>
+                  <td colspan="4">No Active Task Found ...</td>
+                </tr>`
+            );
+        },
+
+        populateTaskTable(taskList) {
+            let input = '';
+            if (Object.keys(taskList).length !== 0) {
+                $.each(taskList, function (key, value) {
+                    console.log(value);
+                    const taskItemTemp = `<tr>
+                        <td>${value.name}</td>
+                        <td><span class="counterTaskStatus">${value.state}</span></td>
+                        <td><button class="attach" value="${value.uuid}">Attach</button><button class="detach" value=${value.uuid}">Detach</button></td>
+                        <td>
+                            <button class="stopTask" value="${value.uuid}">Kill</button>
+                        </td>
+                    </tr>`;
+                    input = input + taskItemTemp;
+                });
+                $('#activeTaskTable tbody').html(input)
+            } else {
+                this.resetTaskList();
+            }
         }
-        
-        function populateTable(data){
-            input = '<tbody>';
-            $.each(data, function (key, value) {
-                input = input+'<tr>\n' +
-                    '                <td style="padding: 14px;">'+value['name']+'</td>\n' +
-                    '                <td style="padding: 14px;"><span id="longTaskStatus">'+value['state']+'</span></td>\n' +
-                    '                <td><button class="attach" value="'+key+'">attach</button><button calss="detach" value="'+key+'">detach</button></td>\n' +
-                    '                <td>\n' +
-                    '                <button class="stopTask" value="'+key+'">off</button>\n</td>\n' +
-                    '\n</tr>'
-            });
-            input = input + '</tbody>';
-            $('#table').append(input)
+    };
 
+
+    const Worker = {
+
+        initialize(){
+            this.getWorkerList();
+            setInterval(this.getWorkerList, 5000);
+        },
+
+        getWorkerList() {
+            return $.ajax({
+                url: "/workers",
+                type: 'GET',
+                dataType: "json",
+                success: function (data) {
+                    Worker.populateWorkerTable(JSON.parse(data));
+                },
+                error: function (error) {
+                    return error
+                }
+            });
+        },
+        populateWorkerTable(workerList) {
+            let input = '';
+
+            //Mustache.parse(taskItemTemp);   // optional, speeds up future uses
+            $.each(workerList, function (key, value) {
+                console.log(value);
+                const date = new Date(value.timestamp * 1000);
+                const workerItemTemp = `<tr>
+                <td>${key}</td>
+                <td>${Object.keys(value.stats.total).length}</td>
+                <td>${Object.keys(value.active).length}</td>
+                <td>${date.toISOString()}</td>
+            </tr>`;
+                input = input + workerItemTemp;
+            });
+            $('#activeWorkerTable tbody').html(input);
         }
-        $(function () {
-            getTasksList('/tasks');
+    };
 
-            $("#selectTask").change(function(){
-                var selectedTask = $(this).children("option:selected").val();
-                if ($('.nameField').length){
-                    $('.nameField').remove();
-                }
-                if(selectedTask === 'longTask'){
-                    input = $('<div class="form-group nameField">\n' +
-                        '  <label for="name">Name:</label>\n' +
-                        '  <input type="text" class="form-control" id="name">\n' +
-                        '</div>');
 
-                    $(".select").append(input)
-                }
-            });
 
-            $("#startTask").click(function () {
-                var value = '';
-                var selectedTask = $(this).children("option:selected").val();
-                if(selectedTask === 'long'){
-                    value = $("#name").val();
-                }
-                var url = '/request?task_name=' + selectedTask;
-                if (value !== '') {
-                    url = url + '&name=' + value
-                }
-                getTasksList(url);
-                getTasksList('/tasks')
 
-            });
-            $(".attach").click(function () {
-                var value = $(".attach").val();
-                //ajax request
-            });
+    $(function () {
+        Worker.initialize();
+        Task.initialize();
 
-            $(".detach").click(function () {
-                var value = $(".detach").val();
-                //ajax request
-            });
+        $("#selectTask").change(function () {
+            const selectedTask = $(this).children("option:selected").val();
+            const nameFieldSelector = '.nameField';
+            if ($(nameFieldSelector).length) {
+                $(nameFieldSelector).remove();
+            }
+            if (selectedTask === 'longTask') {
+                const input = $('<div class="form-group nameField">\n' +
+                    '  <label for="name">Name:</label>\n' +
+                    '  <input type="text" class="form-control" id="name">\n' +
+                    '</div>');
 
-            $(".stopTask").click(function () {
-                var value = $(".stopTask").val();
-                //ajax request
-            })
+                $(".select").append(input)
+            }
+        });
+
+        $("#startTask").click(function () {
+            let value = '';
+            const selectedTask = $(this).children("option:selected").val();
+            if (selectedTask === 'long') {
+                value = $("#name").val();
+            }
+            let url = '/request?task_name=' + selectedTask;
+            if (value !== '') {
+                url = url + '&name=' + value
+            }
+            getTasksList(url);
 
         });
-    </script>
+        $(document).on("click", ".attach", function () {
+            const taskId = $(this).val();
+            logger.attach(taskId);
+            //ajax request
+        });
+
+        $(document).on("click", ".detach", function () {
+            const taskId = $(this).val();
+            logger.detach();
+            //ajax request
+        });
+
+        $(document).on("click", ".stopTask", function () {
+            const taskId = $(this).val();
+            console.log(taskId);
+            //ajax request
+        })
+
+    });
+</script>
 {% endblock %}
