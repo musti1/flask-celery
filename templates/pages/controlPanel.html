@@ -89,6 +89,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script type=text/javascript>
 
+
+
     const logger = {
 
         containerId: "loggerContainer",
@@ -160,6 +162,12 @@
 
         renderLogs(logsData) {
             let logs = '';
+            logsData.sort(function(a,b){
+                const c = new Date(a["@timestamp"]);
+                const d = new Date(b["@timestamp"]);
+                return c-d;
+            });
+
             $.each(logsData, function (key, logItem) {
                 console.log(logItem);
                 logs += `<tr>
