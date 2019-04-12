@@ -161,7 +161,10 @@
 
         setLastLogTime(logsData){
             if(logsData.length !== 0){
-                this.lastLogTime = logsData[logsData.length -1]["@timestamp"];
+                const timeString = logsData[logsData.length -1]["@timestamp"];
+                const timestamp = Date.parse(timeString);
+                const newDate = new Date((timestamp+100));
+                this.lastLogTime = newDate.toISOString();
             }
         },
 
