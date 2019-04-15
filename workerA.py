@@ -1,4 +1,5 @@
-from celery import Celery
+from celery import Celery,states
+from celery.exceptions import Ignore
 from workerATasks import WorkerATasks
 import celstash
 import logging
@@ -24,3 +25,4 @@ def long_task(name):
 @celery.task()
 def fail_task():
     return WorkerATasks.fail_task(logger)
+    raise Ignore()

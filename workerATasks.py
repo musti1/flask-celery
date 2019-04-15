@@ -22,5 +22,6 @@ class WorkerATasks:
         logger.info(f'Executing fail task')
         process = Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE, stderr=STDOUT, bufsize=0)
         line = process.stdout.readline()
-        logger.info(f'{line.decode()}')
+        logger.info(f'Returned Result : {line.decode()}')
+        raise Exception(F'Task is failing')
 

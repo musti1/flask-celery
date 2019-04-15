@@ -1,5 +1,6 @@
+import signal, os
 from celery import Celery
-from workerBTask import WorkerBTasks
+from jobs.workerBJobs import WorkerBJobs
 import celstash
 import logging
 
@@ -12,12 +13,17 @@ CELERY_RESULT_BACKEND = 'rpc://'
 # Initialize Celery
 celery = Celery('workerB', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
 
+workerBjobs = WorkerBJobs(logger)
+
 
 @celery.task()
 def counter_task():
-    return WorkerBTasks.counter_task(logger)
+    signal.signal(signal.SIGTERM, workerBjobs.exit_gracefully)
+    result = workerBjobs.counter_task()
+    if not result:
+        raise Exception("Exiting from here ")
 
 
 @celery.task()
 def addition_task():
-    return WorkerBTasks.sum_task(logger)
+    return workerBjobs.sum_task()
