@@ -6,3 +6,4 @@ elasticsearch
 elasticsearch_dsl
 celstash
 python_logging_rabbitmq
+flask-socketio

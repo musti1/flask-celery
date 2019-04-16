@@ -1,8 +1,12 @@
 #!/usr/local/bin/python3
+from queue import Empty
+from time import sleep
+from kombu import Connection , Queue
 from workerA import long_task, fail_task
 from workerB import counter_task, addition_task
 from flowerApi import FlowerApi
 from EsHelper import EsHelper
+from flask_socketio import SocketIO, emit
 from flask import (
     Flask,
     request,
@@ -15,7 +19,7 @@ app = Flask(__name__)
 app.debug = True
 app.clients = {}
 esHelper = EsHelper()
-
+socketio = SocketIO(app)
 
 @app.route("/")
 def home():
@@ -73,6 +77,45 @@ def terminate():
     task_id = request.args.get('task_id')
     FlowerApi.terminate(task_id)
     return jsonify({}), 200
+
+@app.route('/consume_messages', methods=['GET'])
+def consume_messages():
+    task_id = request.args.get('task_id')
+    with Connection('amqp://rabbitmq:rabbitmq@rabbit:5672/') as _conn:
+        sub_queue = _conn.SimpleQueue(str(task_id))
+        while True:
+            try:
+                _msg = sub_queue.get(block=False)
+                return str(_msg.payload)
+                print("Loruuu")
+                _msg.ack()
+            except Empty:
+                break
+        sub_queue.close()
+        chan = _conn.channel()
+        dq = Queue(name=str(task_id),exchange="")
+        bdq = dq(chan)
+        #bdq.delete()
+        return "all logs gotten"
+
+@socketio.on('getLogs',namespace='/test')
+def test_message(data):
+    with Connection('amqp://rabbitmq:rabbitmq@rabbit:5672/') as _conn:
+        sub_queue = _conn.SimpleQueue(str(data['task_id']))
+        while True:
+            try:
+                _msg = sub_queue.get(block=False)
+                emit('response_to_web',str(_msg.payload))
+                _msg.ack()
+                sleep(0.5)
+            except Empty:
+                break
+        sub_queue.close()
+        chan = _conn.channel()
+        dq = Queue(name=str(data['task_id']),exchange="")
+        bdq = dq(chan)
+        bdq.delete()
+
 
 
 if __name__ == '__main__':

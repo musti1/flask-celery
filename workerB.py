@@ -19,11 +19,22 @@ workerBjobs = WorkerBJobs(logger)
 
 @celery.task()
 def counter_task():
+    #Handling External SIGTERM to communicate with external python module
     signal.signal(signal.SIGTERM, workerBjobs.exit_gracefully)
+
+    #Queue declaration for this task
     logs_queue = Queue(counter_task.request.id, routing_key=counter_task.request.id)
+    #Kombu Connection to message broker
+
     kombuConnection = Connection('amqp://rabbitmq:rabbitmq@rabbit:5672//')
+    #Initialization of Producer
+
     producer = Producer(kombuConnection, auto_declare=True)
+    #Ensuring broker Connection
+
     publish = kombuConnection.ensure(producer, producer.publish, errback=errback, max_retries=3)
+    #Calling external python module & passing message publisher
+
     result = workerBjobs.counter_task(publish, logs_queue)
     if not result:
         publish({'Exception': 'Exiting Gracefully'}, routing_key=logs_queue.routing_key, declare=[logs_queue])
