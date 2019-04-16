@@ -78,26 +78,6 @@ def terminate():
     FlowerApi.terminate(task_id)
     return jsonify({}), 200
 
-@app.route('/consume_messages', methods=['GET'])
-def consume_messages():
-    task_id = request.args.get('task_id')
-    with Connection('amqp://rabbitmq:rabbitmq@rabbit:5672/') as _conn:
-        sub_queue = _conn.SimpleQueue(str(task_id))
-        while True:
-            try:
-                _msg = sub_queue.get(block=False)
-                return str(_msg.payload)
-                print("Loruuu")
-                _msg.ack()
-            except Empty:
-                break
-        sub_queue.close()
-        chan = _conn.channel()
-        dq = Queue(name=str(task_id),exchange="")
-        bdq = dq(chan)
-        #bdq.delete()
-        return "all logs gotten"
-
 @socketio.on('getLogs',namespace='/test')
 def test_message(data):
     with Connection('amqp://rabbitmq:rabbitmq@rabbit:5672/') as _conn:
