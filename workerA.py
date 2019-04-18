@@ -32,7 +32,7 @@ publish = kombuConnection.ensure(producer, producer.publish, errback=errback, ma
 def long_task(name):
     logs_queue = Queue(long_task.request.id, routing_key=long_task.request.id)
     # Sending Message back to broker
-    publish({'Message': 'Executing Long Task'}, routing_key=logs_queue.routing_key,
+    publish({'Message': {'value': 'Executing Long Task'}}, routing_key=logs_queue.routing_key,
             declare=[logs_queue])
 
     cmd = "sh jobs/longTaskjob.sh {}".format(name)
@@ -42,7 +42,7 @@ def long_task(name):
         if not line:
             break
         # Sending Message back to broker
-        publish({'Message': {'Current_value': line.decode(), 'task_id': logs_queue.routing_key}},
+        publish({'Message': {'value': line.decode(), 'task_id': logs_queue.routing_key}},
                 routing_key=logs_queue.routing_key,
                 declare=[logs_queue])
 
@@ -52,14 +52,14 @@ def fail_task():
     logs_queue = Queue(fail_task.request.id, routing_key=fail_task.request.id)
     cmd = "sh jobs/failTaskjob.sh"
     # Sending Message back to broker
-    publish({'Message': 'Executing Counter Task'}, routing_key=logs_queue.routing_key,
+    publish({'Message': {'value': 'Executing Fail Task'}}, routing_key=logs_queue.routing_key,
             declare=[logs_queue])
 
     process = Popen(shlex.split(cmd), stdin=PIPE, stdout=PIPE, stderr=STDOUT, bufsize=0)
     line = process.stdout.readline()
 
     # Sending Message back to broker
-    publish({'Message': {'Current_value': line.decode(), 'task_id': logs_queue.routing_key}},
+    publish({'Message': {'value': line.decode(), 'task_id': logs_queue.routing_key}},
             routing_key=logs_queue.routing_key,
             declare=[logs_queue])
     raise Exception(F'Task is failing')

@@ -14,11 +14,11 @@ class WorkerBJobs:
         self.kill_now = True
 
     def counter_task(self, queue):
-        self.publish({'Message': 'Executing Counter Task'}, routing_key=queue.routing_key,
+        self.publish({'Message': {'value': 'Executing Counter Task'}}, routing_key=queue.routing_key,
                      declare=[queue])
         while True:
             value = '{}'.format(self.current_counter)
-            self.publish({'Message': {'Current_value': value, 'task_id': queue.routing_key}},
+            self.publish({'Message': {'value': value, 'task_id': queue.routing_key}},
                          routing_key=queue.routing_key,
                          declare=[queue])
             sleep(1)
@@ -27,11 +27,11 @@ class WorkerBJobs:
                 return False
 
     def sum_task(self, queue):
-        self.publish({'Message': 'Executing addition Task'}, routing_key=queue.routing_key,
+        self.publish({'Message': {'value': 'Executing Addition Task'}}, routing_key=queue.routing_key,
                      declare=[queue])
         value = self.sum_of_rand_nums()
         sleep(20)
-        self.publish({'Message': {'Current_value': value, 'task_id': queue.routing_key}},
+        self.publish({'Message': {'value': value, 'task_id': queue.routing_key}},
                      routing_key=queue.routing_key,
                      declare=[queue])
         return value

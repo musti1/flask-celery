@@ -61,24 +61,25 @@ def terminate():
     return jsonify({}), 200
 
 
-@socketio.on('getLogs', namespace='/test')
+@socketio.on('getLogs', namespace='/logs')
 def test_message(data):
     with Connection('amqp://rabbitmq:rabbitmq@rabbit:5672/') as _conn:
         sub_queue = _conn.SimpleQueue(str(data['task_id']))
         while True:
-            try:
-                _msg = sub_queue.get(block=False)
-                emit('response_to_web', str(_msg.payload))
-                _msg.ack()
-                sleep(0.5)
-            except Empty:
-                break
-        sub_queue.close()
-        chan = _conn.channel()
-        dq = Queue(name=str(data['task_id']), exchange="")
-        bdq = dq(chan)
-        bdq.delete()
+            # try:
+            _msg = sub_queue.get(block=False)
+            emit('response_to_web', _msg.payload, namespace='/logs')
+            _msg.ack()
+            sleep(0.25)
+            # If queue deletion required un comment the code
+            # except Empty:
+            #     break
+        # sub_queue.close()
+        # chan = _conn.channel()
+        # dq = Queue(name=str(data['task_id']), exchange="")
+        # bdq = dq(chan)
+        # bdq.delete()
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    socketio.run(app, debug=True, port=5000, host='0.0.0.0')

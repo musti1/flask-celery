@@ -41,7 +41,7 @@ def counter_task():
     # Calling external python module & passing message publisher
     result = workerBjobs.counter_task(logs_queue)
     if not result:
-        publish({'Exception': 'Exiting Gracefully'}, routing_key=logs_queue.routing_key, declare=[logs_queue])
+        publish({'Message': {'value': 'Exiting Gracefully'}}, routing_key=logs_queue.routing_key, declare=[logs_queue])
         raise Exception("Exiting from here ")
 
 

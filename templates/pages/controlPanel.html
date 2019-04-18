@@ -1,310 +1,310 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="row" style="margin-top: 50px;">
-    <div class="col-md-4 text-center">
-        <div class="form-group taskDef">
-            <label for="selectTask">Tasks List :</label>
-            <select class="form-control" id="selectTask">
-                <option selected disabled value="">Select Task</option>
-                <option value="long">Long Task</option>
-                <option value="fail">Fail Task</option>
-                <option value="counter">Counter Task</option>
-                <option value="addition">Addition Task</option>
-            </select>
-            <br>
+    <div class="row" style="margin-top: 50px;">
+        <div class="col-md-4 text-center">
+            <div class="form-group taskDef">
+                <label for="selectTask">Tasks List :</label>
+                <select class="form-control" id="selectTask">
+                    <option selected disabled value="">Select Task</option>
+                    <option value="long">Long Task</option>
+                    <option value="fail">Fail Task</option>
+                    <option value="counter">Counter Task</option>
+                    <option value="addition">Addition Task</option>
+                </select>
+                <br>
+            </div>
+        </div>
+        <div class="col-md-8 text-right" style="margin-top: 30px;">
+            <div class="form-group button">
+                <button id="startTask" type="button" class="btn btn-secondary">Start</button>
+            </div>
         </div>
     </div>
-    <div class="col-md-8 text-right" style="margin-top: 30px;">
-        <div class="form-group button">
-            <button id="startTask" type="button" class="btn btn-secondary">Start</button>
+    <div class="row" style="margin-top: 50px;">
+        <div class="col-md-6 text-center">
+            <div>
+                <h2>Task List</h2>
+                <table id="activeTaskTable" class="table table-striped table-dark">
+                    <thead>
+                    <tr>
+                        <th scope="col">Task Name</th>
+                        <th scope="col">State</th>
+                        <th scope="col">Attach/Detach</th>
+                        <th scope="col">Stop</th>
+                        <th scope="col">Args</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td colspan="4">No Active Task Found ...</td>
+                    </tr>
+                    </tbody>
+
+                </table>
+            </div>
+            <div>
+                <h2>Active Workers</h2>
+                <table id="activeWorkerTable" class="table table-striped table-dark">
+                    <thead>
+                    <tr>
+                        <th scope="col">Worker Name</th>
+                        <th scope="col">Active</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Last Checked</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td colspan="4">No Active Workers Found ...</td>
+                    </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+        <div class="col-md-6 text-center">
+            <h2>Logger</h2>
+            <div id="loggerContainer" class="table-wrapper-scroll-y my-custom-scrollbar">
+                <table id="logger" class="table table-striped table-dark">
+                    <thead>
+                    <tr>
+
+                        <th scope="col">Message</th>
+
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td colspan="3">Attach task to logger ...</td>
+                    </tr>
+                    </tbody>
+
+                </table>
+            </div>
         </div>
     </div>
-</div>
-<div class="row" style="margin-top: 50px;">
-    <div class="col-md-6 text-center">
-        <div>
-            <h2>Task List</h2>
-            <table id="activeTaskTable" class="table table-striped table-dark">
-                <thead>
-                <tr>
-                    <th scope="col">Task Name</th>
-                    <th scope="col">State</th>
-                    <th scope="col">Attach/Detach</th>
-                    <th scope="col">Stop</th>
-                    <th scope="col">Args</th>
 
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td colspan="4">No Active Task Found ...</td>
-                </tr>
-                </tbody>
-
-            </table>
-        </div>
-        <div>
-            <h2>Active Workers</h2>
-            <table id="activeWorkerTable" class="table table-striped table-dark">
-                <thead>
-                <tr>
-                    <th scope="col">Worker Name</th>
-                    <th scope="col">Active</th>
-                    <th scope="col">Total</th>
-                    <th scope="col">Last Checked</th>
-
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td colspan="4">No Active Workers Found ...</td>
-                </tr>
-                </tbody>
-
-            </table>
-        </div>
-    </div>
-    <div class="col-md-6 text-center">
-        <h2>Logger</h2>
-        <div id="loggerContainer" class="table-wrapper-scroll-y my-custom-scrollbar">
-            <table id="logger" class="table table-striped table-dark">
-                <thead>
-                <tr>
-                    <th scope="col">Host Name</th>
-                    <th scope="col">TimeStamp</th>
-                    <th scope="col">Message</th>
-
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td colspan="3">Attach task to logger ...</td>
-                </tr>
-                </tbody>
-
-            </table>
-        </div>
-    </div>
-</div>
-
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script type=text/javascript>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script type=text/javascript>
 
 
+        const logger = {
 
-    const logger = {
-
-        containerId: "loggerContainer",
-        tableId: "logger",
-        lastLogTime: null,
-        attachedTask: null,
-        pollIntervalId: null,
+            containerId: "loggerContainer",
+            tableId: "logger",
+            lastLogTime: null,
+            attachedTask: null,
+            pollIntervalId: null,
 
 
-        initialize(){
-            this.getAllHistory();
-        },
-        pollNewItems() {
-            this.pollIntervalId = setInterval(this.getRecentHistory, 3000);
-        },
+            initialize() {
+                this.getAllHistory();
+            },
+            pollNewItems() {
+                this.pollIntervalId = setInterval(this.getRecentHistory, 3000);
+            },
 
-        clearPolling() {
-            clearInterval(this.pollIntervalId);
-        },
+            clearPolling() {
+                clearInterval(this.pollIntervalId);
+            },
 
-        isAttached() {
-            return (this.currentlyAttached() !== null);
-        },
+            isAttached() {
+                return (this.currentlyAttached() !== null);
+            },
 
-        currentlyAttached(){
-            return localStorage.getItem("attachedTask");
-        },
+            currentlyAttached() {
+                return localStorage.getItem("attachedTask");
+            },
 
-        attach(taskId) {
-            if(this.isAttached()){
-                this.detach();
-            }
-            localStorage.setItem("attachedTask", taskId);
-            this.resetLogs();
-            this.getAllHistory();
-            $.notify("Task Attached to logger" , "success");
+            attach(taskId) {
+                if (this.isAttached()) {
+                    this.detach();
+                }
+                localStorage.setItem("attachedTask", taskId);
+                this.resetLogs();
+                this.getAllHistory();
+                $.notify("Task Attached to logger", "success");
 
-        },
+            },
 
-        detach() {
-            localStorage.removeItem("attachedTask");
-            this.lastLogTime = null;
-            this.resetLogs();
-            this.clearPolling();
-            $.notify("Task Detached from logger" , "success");
-        },
+            detach() {
+                localStorage.removeItem("attachedTask");
+                this.lastLogTime = null;
+                this.resetLogs();
+                this.clearPolling();
+                $.notify("Task Detached from logger", "success");
+            },
 
-        addLoadingText(){
-            $(`#${this.tableId} tbody`).html(
-                `<tr>
+            addLoadingText() {
+                $(`#${this.tableId} tbody`).html(
+                    `<tr>
                     <td colspan="3">Loading Logs ....</td>
                 </tr>`
-            );
-        },
+                );
+            },
 
-        clear() {
-            $(`#${this.tableId} tbody`).html("");
-        },
+            clear() {
+                $(`#${this.tableId} tbody`).html("");
+            },
 
-        resetLogs() {
-            $(`#${this.tableId} tbody`).html(
-                `<tr>
+            resetLogs() {
+                $(`#${this.tableId} tbody`).html(
+                    `<tr>
                     <td colspan="3">Attach task to logger ...</td>
                 </tr>`
-            );
-        },
+                );
+            },
 
-        setLastLogTime(logsData){
-            if(logsData.length !== 0){
-                const timeString = logsData[logsData.length -1]["@timestamp"];
-                const timestamp = Date.parse(timeString);
-                const newDate = new Date((timestamp+100));
-                this.lastLogTime = newDate.toISOString();
-            }
-        },
+            setLastLogTime(logsData) {
+                if (logsData.length !== 0) {
+                    const timeString = logsData[logsData.length - 1]["@timestamp"];
+                    const timestamp = Date.parse(timeString);
+                    const newDate = new Date((timestamp + 100));
+                    this.lastLogTime = newDate.toISOString();
+                }
+            },
 
-        renderLogs(logsData) {
-            let logs = '';
-            logsData.sort(function(a,b){
-                const c = new Date(a["@timestamp"]);
-                const d = new Date(b["@timestamp"]);
-                return c-d;
-            });
+            renderLogs(logsData) {
+                let logs = '';
+                logsData.sort(function (a, b) {
+                    const c = new Date(a["@timestamp"]);
+                    const d = new Date(b["@timestamp"]);
+                    return c - d;
+                });
 
-            $.each(logsData, function (key, logItem) {
-                console.log(logItem);
-                logs += `<tr>
+                $.each(logsData, function (key, logItem) {
+                    console.log(logItem);
+                    logs += `<tr>
                     <td>${logItem["@fields"]["celery"]["hostname"]}</td>
                     <td>${logItem["@timestamp"]}</td>
                     <td>${logItem["@message"]}</td>
                 </tr>`;
-            });
-            this.setLastLogTime(logsData);
-            $(`#${this.tableId} tbody`).append(logs);
-            $(`#${this.containerId}`).animate({
-                scrollTop: $(`#${this.tableId}`).height()
-            }, 1000);
+                });
+                this.setLastLogTime(logsData);
+                $(`#${this.tableId} tbody`).append(logs);
+                $(`#${this.containerId}`).animate({
+                    scrollTop: $(`#${this.tableId}`).height()
+                }, 1000);
 
-        },
+            },
 
-        getAllHistory() {
-            if (this.isAttached()) {
-                this.addLoadingText();
-                $.ajax({
-                    url: `/logs?task_id=${this.currentlyAttached()}`,
+            getAllHistory() {
+                if (this.isAttached()) {
+                    this.addLoadingText();
+                    $.ajax({
+                        url: `/logs?task_id=${this.currentlyAttached()}`,
+                        type: 'GET',
+                        dataType: "json",
+                        success: function (data) {
+                            logger.clear();
+                            logger.renderLogs(data);
+                            logger.pollNewItems();
+                        },
+                        error: function (error) {
+                            return error
+                        }
+                    });
+                }
+
+            },
+
+            getRecentHistory() {
+                // poll only when last log time is set otherwise ignore
+                if (this.lastLogTime !== null) {
+                    console.log("polling for new history");
+                    $.ajax({
+                        url: `/updated_logs?task_id=${logger.currentlyAttached()}&date_from=${logger.lastLogTime}`,
+                        type: 'GET',
+                        dataType: "json",
+                        success: function (data) {
+                            logger.renderLogs(data);
+                        },
+                        error: function (error) {
+                            return error
+                        }
+                    });
+                }
+
+            }
+        };
+
+        const Task = {
+
+            initialize() {
+                this.getTasksList();
+                setInterval(this.getTasksList, 5000);
+            },
+
+            terminate(taskId) {
+                return $.ajax({
+                    url: "/terminate?task_id=" + taskId,
                     type: 'GET',
                     dataType: "json",
                     success: function (data) {
-                        logger.clear();
-                        logger.renderLogs(data);
-                        logger.pollNewItems();
+                        $.notify("Task Scheduled for Termination", "success");
                     },
                     error: function (error) {
                         return error
                     }
                 });
-            }
+            },
 
-        },
+            start(taskName, params = {}) {
 
-        getRecentHistory() {
-            // poll only when last log time is set otherwise ignore
-            if(this.lastLogTime !== null ){
-                console.log("polling for new history");
-                $.ajax({
-                    url: `/updated_logs?task_id=${logger.currentlyAttached()}&date_from=${logger.lastLogTime}`,
+                const requestParams = {
+                    task_name: taskName,
+                };
+
+                console.log(requestParams);
+                return $.ajax({
+                    url: "/execute_task",
                     type: 'GET',
+                    data: Object.assign(requestParams, params),
                     dataType: "json",
                     success: function (data) {
-                        logger.renderLogs(data);
+                        $.notify("Task Scheduled for Initiation", "success");
                     },
                     error: function (error) {
                         return error
                     }
                 });
-            }
+            },
+            getTasksList() {
+                return $.ajax({
+                    url: "/tasks",
+                    type: 'GET',
+                    dataType: "json",
+                    success: function (data) {
+                        Task.populateTaskTable(data);
+                    },
+                    error: function (error) {
+                        return error
+                    }
+                });
+            },
 
-        }
-    };
-
-    const Task = {
-
-        initialize(){
-            this.getTasksList();
-            setInterval(this.getTasksList, 5000);
-        },
-
-        terminate(taskId){
-            return $.ajax({
-                url: "/terminate?task_id="+ taskId,
-                type: 'GET',
-                dataType: "json",
-                success: function (data) {
-                    $.notify("Task Scheduled for Termination" , "success");
-                },
-                error: function (error) {
-                    return error
-                }
-            });
-        },
-
-        start(taskName, params = {}){
-
-            const requestParams = {
-                task_name: taskName,
-            };
-
-            console.log(requestParams);
-            return $.ajax({
-                url: "/execute_task",
-                type: 'GET',
-                data: Object.assign(requestParams, params),
-                dataType: "json",
-                success: function (data) {
-                    $.notify("Task Scheduled for Initiation", "success");
-                },
-                error: function (error) {
-                    return error
-                }
-            });
-        },
-        getTasksList() {
-            return $.ajax({
-                url: "/tasks",
-                type: 'GET',
-                dataType: "json",
-                success: function (data) {
-                    Task.populateTaskTable(JSON.parse(data));
-                },
-                error: function (error) {
-                    return error
-                }
-            });
-        },
-
-        resetTaskList(){
-            $('#activeTaskTable tbody').html(
-                `<tr>
+            resetTaskList() {
+                $('#activeTaskTable tbody').html(
+                    `<tr>
                   <td colspan="4">No Active Task Found ...</td>
                 </tr>`
-            );
-        },
+                );
+            },
 
-        populateTaskTable(taskList) {
-            let input = '';
-            if (Object.keys(taskList).length !== 0) {
-                $.each(taskList, function (key, value) {
-                    console.log(value);
-                    const killButton = (value.state === "STARTED") ? `<button class="stopTask" value="${value.uuid}">Kill</button>` : '';
-                    const taskItemTemp = `<tr>
+            populateTaskTable(taskList) {
+                let input = '';
+                if (Object.keys(taskList).length !== 0) {
+                    $.each(taskList, function (key, workerValue) {
+                        $.each(workerValue, function (k, value) {
+                            console.log(value);
+                            const killButton = `<button class="stopTask" value="${value.id}">Kill</button>`;
+                            const taskItemTemp = `<tr>
                         <td>${value.name}</td>
-                        <td><span class="counterTaskStatus">${value.state}</span></td>
-                        <td><button class="attach" value="${value.uuid}">Attach</button><button class="detach" value=${value.uuid}">Detach</button></td>
+                        <td><span class="counterTaskStatus">running</span></td>
+                        <td><button class="attach" value="${value.id}">Attach</button><button class="detach" value=${value.id}">Detach</button></td>
                         <td>
                             ${killButton}
                         </td>
@@ -312,110 +312,123 @@
                             ${value.args}
                         </td>
                     </tr>`;
-                    input = input + taskItemTemp;
-                });
-                $('#activeTaskTable tbody').html(input)
-            } else {
-                this.resetTaskList();
-            }
-        }
-    };
+                            input = input + taskItemTemp;
+                        });
 
-
-    const Worker = {
-
-        initialize(){
-            this.getWorkerList();
-            setInterval(this.getWorkerList, 5000);
-        },
-
-        getWorkerList() {
-            return $.ajax({
-                url: "/workers",
-                type: 'GET',
-                dataType: "json",
-                success: function (data) {
-                    Worker.populateWorkerTable(JSON.parse(data));
-                },
-                error: function (error) {
-                    return error
+                    });
+                    $('#activeTaskTable tbody').html(input)
+                } else {
+                    this.resetTaskList();
                 }
-            });
-        },
-        populateWorkerTable(workerList) {
-            let input = '';
+            }
+        };
 
-            //Mustache.parse(taskItemTemp);   // optional, speeds up future uses
-            $.each(workerList, function (key, value) {
-                console.log(value);
-                const date = new Date(value.timestamp * 1000);
-                const workerItemTemp = `<tr>
+
+        const Worker = {
+
+            initialize() {
+                this.getWorkerList();
+                setInterval(this.getWorkerList, 5000);
+            },
+
+            getWorkerList() {
+                return $.ajax({
+                    url: "/workers",
+                    type: 'GET',
+                    dataType: "json",
+                    success: function (data) {
+                        Worker.populateWorkerTable(data);
+                    },
+                    error: function (error) {
+                        return error
+                    }
+                });
+            },
+            populateWorkerTable(workerList) {
+                let input = '';
+                //Mustache.parse(taskItemTemp);   // optional, speeds up future uses
+                $.each(workerList, function (key, value) {
+                    const date = new Date();
+                    const workerItemTemp = `<tr>
                 <td>${key}</td>
-                <td>${Object.keys(value.stats.total).length}</td>
-                <td>${Object.keys(value.active).length}</td>
+                <td>${value.length}</td>
+                <td>${value.length}</td>
                 <td>${date.toISOString()}</td>
             </tr>`;
-                input = input + workerItemTemp;
-            });
-            $('#activeWorkerTable tbody').html(input);
-        }
-    };
-
-
-
-
-    $(function () {
-
-        Worker.initialize();
-        Task.initialize();
-        logger.initialize();
-
-        $("#selectTask").change(function () {
-            const selectedTask = $("#selectTask").val();
-            const nameFieldSelector = '.nameField';
-            if ($(nameFieldSelector).length) {
-                $(nameFieldSelector).remove();
+                    input = input + workerItemTemp;
+                });
+                $('#activeWorkerTable tbody').html(input);
             }
-            if (selectedTask === 'long') {
-                const input = $(`<div class="form-group nameField">
+        };
+
+
+        $(function () {
+            var socket = io.connect('http://localhost:5000/logs');
+            Worker.initialize();
+            Task.initialize();
+            {#logger.initialize();#}
+
+            socket.on('response_to_web', function (msg) {
+                console.log(msg);
+                var logs = '';
+                logs += `<tr>
+                        <td>${msg["Message"]["value"]}</td>
+                </tr>`;
+                $(`#logger tbody`).append(logs);
+                $(`#loggerContainer`).animate({
+                    scrollTop: $(`#logger`).height()
+                }, 1000);
+            });
+
+            $("#selectTask").change(function () {
+                const selectedTask = $("#selectTask").val();
+                const nameFieldSelector = '.nameField';
+                if ($(nameFieldSelector).length) {
+                    $(nameFieldSelector).remove();
+                }
+                if (selectedTask === 'long') {
+                    const input = $(`<div class="form-group nameField">
                       <label for="name">Name:</label>
                       <input type="text" class="form-control" id="name">
                     </div>`);
 
-                $(".taskDef").append(input)
-            }
+                    $(".taskDef").append(input)
+                }
+            });
+
+            $("#startTask").click(function () {
+
+                const selectedTask = $("#selectTask").val();
+                if (selectedTask === 'long') {
+                    const nameParam = $("#name").val();
+                    Task.start(selectedTask, {name: nameParam});
+                } else {
+                    Task.start(selectedTask);
+                }
+
+
+            });
+            $(document).on("click", ".attach", function () {
+                const taskId = $(this).val();
+                socket.emit('getLogs', {task_id: taskId});
+                {#logger.attach(taskId);#}
+                //ajax request
+            });
+
+            $(document).on("click", ".detach", function () {
+                const taskId = $(this).val();
+                {#socket.emit('getLogs', {task_id: taskId, attach: false});#}
+                logger.detach();
+
+                //ajax request
+            });
+
+            $(document).on("click", ".stopTask", function () {
+                const taskId = $(this).val();
+                Task.terminate(taskId);
+                //ajax request
+            })
+
         });
-
-        $("#startTask").click(function () {
-
-            const selectedTask = $("#selectTask").val();
-            if (selectedTask === 'long') {
-                const nameParam = $("#name").val();
-                Task.start(selectedTask, {name: nameParam});
-            }else {
-                Task.start(selectedTask);
-            }
-
-
-        });
-        $(document).on("click", ".attach", function () {
-            const taskId = $(this).val();
-            logger.attach(taskId);
-            //ajax request
-        });
-
-        $(document).on("click", ".detach", function () {
-            const taskId = $(this).val();
-            logger.detach();
-            //ajax request
-        });
-
-        $(document).on("click", ".stopTask", function () {
-            const taskId = $(this).val();
-            Task.terminate(taskId);
-            //ajax request
-        })
-
-    });
-</script>
+    </script>
 {% endblock %}
