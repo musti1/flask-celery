@@ -21,7 +21,7 @@ And rabbitmq server on.
 
 ```http://localhost:15672```
 
-Elasticsearch will be available on localhost port `9200` and logstash on port `9999`.
+Elasticsearch will be available on localhost port `9200` and logstash on port `9999` and flower on port `5555`
 
 
 # Inspecting Services
